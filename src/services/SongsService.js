@@ -18,7 +18,7 @@ class SongsService {
     }
 
     const result = await this._pool.query(query)
-    if (!result.rows[0].id) {
+    if (!result.rowCount) {
       throw new InvariantError('Lagu gagal ditambahkan')
     }
 
@@ -88,6 +88,22 @@ class SongsService {
 
     const result = await this._pool.query(query)
 
+    if (!result.rowCount) {
+      return []
+    }
+
+    return result.rows.map(mapDBToModel)
+  }
+
+  async getSongsByPlaylistId (id) {
+    const query = {
+      text: `SELECT songs.* FROM songs
+      INNER JOIN playlist_songs ON playlist_songs.song_id = songs.id
+      WHERE playlist_songs.playlist_id = $1`,
+      values: [id]
+    }
+
+    const result = await this._pool.query(query)
     if (!result.rowCount) {
       return []
     }
