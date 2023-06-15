@@ -1,9 +1,9 @@
 const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
-const InvariantError = require('../exceptions/InvariantError')
-const { mapDBToModel } = require('../utils/forPlaylists')
-const NotFoundError = require('../exceptions/NotFoundError')
-const AuthorizationError = require('../exceptions/AuthorizationError')
+const InvariantError = require('../../exceptions/InvariantError')
+const { mapDBToModel } = require('../../utils/forPlaylists')
+const NotFoundError = require('../../exceptions/NotFoundError')
+const AuthorizationError = require('../../exceptions/AuthorizationError')
 
 class PlaylistsService {
   constructor (collaborationsService) {
@@ -19,13 +19,11 @@ class PlaylistsService {
       values: [id, name, owner]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
-      throw new InvariantError('Playlist gagal ditambahkan')
-    }
+    if (!rows[0].id) throw new InvariantError('Playlist gagal ditambahkan')
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   async getPlaylists (owner) {
@@ -37,8 +35,8 @@ class PlaylistsService {
       values: [owner]
     }
 
-    const result = await this._pool.query(query)
-    return result.rows.map(mapDBToModel)
+    const { rows } = await this._pool.query(query)
+    return rows.map(mapDBToModel)
   }
 
   async deletePlaylistById (id) {
@@ -47,11 +45,9 @@ class PlaylistsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Playlist gagal dihapus')
-    }
+    if (!rowCount) throw new NotFoundError('Playlist gagal dihapus')
   }
 
   async getPlaylistById (id) {
@@ -63,11 +59,10 @@ class PlaylistsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
-    if (!result.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan')
-    }
-    return mapDBToModel(result.rows[0])
+    const { rows, rowCount } = await this._pool.query(query)
+    if (!rowCount) throw new NotFoundError('Playlist tidak ditemukan')
+
+    return mapDBToModel(rows[0])
   }
 
   async verifyPlaylistOwner (id, owner) {
@@ -76,26 +71,20 @@ class PlaylistsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan')
-    }
+    if (!rowCount) throw new NotFoundError('Playlist tidak ditemukan')
 
-    const playlist = result.rows[0]
+    const playlist = rows[0]
 
-    if (playlist.owner !== owner) {
-      throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
-    }
+    if (playlist.owner !== owner) throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
   }
 
   async verifyPlaylistAccess (id, userId) {
     try {
       await this.verifyPlaylistOwner(id, userId)
     } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw error
-      }
+      if (error instanceof NotFoundError) throw error
 
       try {
         await this._collaborationsService.verifyCollaborator(id, userId)

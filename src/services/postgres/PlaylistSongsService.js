@@ -1,7 +1,7 @@
 const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
-const InvariantError = require('../exceptions/InvariantError')
-const NotFoundError = require('../exceptions/NotFoundError')
+const InvariantError = require('../../exceptions/InvariantError')
+const NotFoundError = require('../../exceptions/NotFoundError')
 
 class PlaylistSongsService {
   constructor () {
@@ -16,13 +16,11 @@ class PlaylistSongsService {
       values: [id, playlistId, songId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('Lagu gagal ditambahkan')
-    }
+    if (!rowCount) throw new InvariantError('Lagu gagal ditambahkan')
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   async deleteSong (playlistId, songId) {
@@ -31,11 +29,9 @@ class PlaylistSongsService {
       values: [playlistId, songId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Lagu gagal dihapus')
-    }
+    if (!rowCount) throw new NotFoundError('Lagu gagal dihapus')
   }
 }
 

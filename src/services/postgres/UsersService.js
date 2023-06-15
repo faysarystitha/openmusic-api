@@ -1,9 +1,9 @@
 const { Pool } = require('pg')
-const InvariantError = require('../exceptions/InvariantError')
+const InvariantError = require('../../exceptions/InvariantError')
 const { nanoid } = require('nanoid')
 const bcrypt = require('bcrypt')
-const NotFoundError = require('../exceptions/NotFoundError')
-const AuthenticationError = require('../exceptions/AuthenticationError')
+const NotFoundError = require('../../exceptions/NotFoundError')
+const AuthenticationError = require('../../exceptions/AuthenticationError')
 
 class UsersService {
   constructor () {
@@ -20,13 +20,11 @@ class UsersService {
       values: [id, username, hashedPassword, fullname]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('User gagal ditambahkan')
-    }
+    if (!rowCount) throw new InvariantError('User gagal ditambahkan')
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   async verifyNewUsername (username) {
@@ -35,11 +33,9 @@ class UsersService {
       values: [username]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (result.rowCount > 0) {
-      throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.')
-    }
+    if (rowCount > 0) throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.')
   }
 
   async getUserById (userId) {
@@ -48,13 +44,11 @@ class UsersService {
       values: [userId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new NotFoundError('User tidak ditemukan')
-    }
+    if (!rowCount) throw new NotFoundError('User tidak ditemukan')
 
-    return result.rows[0]
+    return rows[0]
   }
 
   async verifyUserCredential (username, password) {
@@ -63,19 +57,15 @@ class UsersService {
       values: [username]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new AuthenticationError('Kredensial yang diberikan salah')
-    }
+    if (!rowCount) throw new AuthenticationError('Kredensial yang diberikan salah')
 
-    const { id, password: hashedPassword } = result.rows[0]
+    const { id, password: hashedPassword } = rows[0]
 
     const match = await bcrypt.compare(password, hashedPassword)
 
-    if (!match) {
-      throw new AuthenticationError('Kredensial yang diberikan salah')
-    }
+    if (!match) throw new AuthenticationError('Kredensial yang diberikan salah')
 
     return id
   }

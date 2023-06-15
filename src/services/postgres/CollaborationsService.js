@@ -1,6 +1,6 @@
 const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
-const InvariantError = require('../exceptions/InvariantError')
+const InvariantError = require('../../exceptions/InvariantError')
 
 class CollaborationsService {
   constructor () {
@@ -15,13 +15,11 @@ class CollaborationsService {
       values: [id, playlistId, userId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('Kolaborasi gagal ditambahkan')
-    }
+    if (!rowCount) throw new InvariantError('Kolaborasi gagal ditambahkan')
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   async deleteCollaboration (playlistId, userId) {
@@ -30,11 +28,9 @@ class CollaborationsService {
       values: [playlistId, userId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('Kolaborasi gagal dihapus')
-    }
+    if (!rowCount) throw new InvariantError('Kolaborasi gagal dihapus')
   }
 
   async verifyCollaborator (playlistId, userId) {
@@ -43,11 +39,9 @@ class CollaborationsService {
       values: [playlistId, userId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('Kolaborasi gagal diverifikasi')
-    }
+    if (!rowCount) throw new InvariantError('Kolaborasi gagal diverifikasi')
   }
 }
 

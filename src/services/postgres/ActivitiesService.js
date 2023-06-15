@@ -1,7 +1,7 @@
 const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
-const InvariantError = require('../exceptions/InvariantError')
-const { mapDBToModel } = require('../utils/forActivities')
+const InvariantError = require('../../exceptions/InvariantError')
+const { mapDBToModel } = require('../../utils/forActivities')
 
 class ActivitiesService {
   constructor () {
@@ -16,13 +16,11 @@ class ActivitiesService {
       values: [id, playlistId, username, title, action, time]
     }
 
-    const result = await this._pool.query(query)
+    const { rows, rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
-      throw new InvariantError('Aktifitas gagal ditambahkan')
-    }
+    if (!rowCount) throw new InvariantError('Aktifitas gagal ditambahkan')
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   async getActivitiesPlaylistById (playlistId) {
@@ -31,12 +29,10 @@ class ActivitiesService {
       values: [playlistId]
     }
 
-    const result = await this._pool.query(query)
-    if (!result.rowCount) {
-      return []
-    }
+    const { rows, rowCount } = await this._pool.query(query)
+    if (!rowCount) return []
 
-    return result.rows.map(mapDBToModel)
+    return rows.map(mapDBToModel)
   }
 }
 

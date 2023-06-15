@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start-dev": "nodemon ./src/server.js",
+    "dev": "nodemon ./src/server.js",
     "lint": "eslint ./",
     "migrate": "node-pg-migrate"
   },
@@ -21,7 +21,9 @@
   "homepage": "https://github.com/faysarystitha/openmusic-api#readme",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
+    "@hapi/inert": "^7.1.0",
     "@hapi/jwt": "^3.2.0",
+    "amqplib": "^0.10.3",
     "auto-bind": "^4.0.0",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
@@ -29,7 +31,8 @@
     "nanoid": "^3.0.0",
     "node-pg-migrate": "^6.2.2",
     "nodemon": "^2.0.22",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "redis": "^4.6.6"
   },
   "devDependencies": {
     "eslint": "^8.40.0",

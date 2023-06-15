@@ -2,12 +2,14 @@ const mapDBToModel = ({
   id,
   name,
   year,
-  songs
+  songs,
+  coverUrl
 }) => ({
   id,
   name,
   year,
-  songs
+  songs,
+  coverUrl
 })
 
 module.exports = { mapDBToModel }
